@@ -1,23 +1,11 @@
 class TTTCore
   attr_reader :player_x, :player_o, :current_player
-  attr_reader :places, :winner, :draw, :over 
+  attr_reader :places, :rows, :winner, :draw, :over 
 
-  # TODO: this should be auto generated
-  # row, column, diagonal matches check auto
-  WIN_COMBINATIONS = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [6, 4, 2],
-    [0, 4, 8]
-  ]
+  def initialize(rows, player_x, player_o)
+    initialize_places(rows)
 
-  def initialize(player_x, player_o)
-    # TODO: Add support for more complex board sizes
-    @places = Array.new(9, " ") # board of 3 X 3
+    @rows = rows
     @player_x = player_x
     @player_o = player_o
 
@@ -31,6 +19,12 @@ class TTTCore
     move(place)
   end
 
+  # check if place has not been selected and is available
+  def place_available?(place)
+    @places[place] != 'X' && @places[place] != 'O'
+  end
+
+  # add marker to a specifc position in the board
   def move(place)
     @places[place] = @current_player.marker if place_available?(place)
 
@@ -38,41 +32,83 @@ class TTTCore
     game_ended?
   end
 
-  # check if place has not been selected and is available
-  def place_available?(place)
-    @places[place] == " "
-  end
-
-  # identify user with next turn
-  def next_turn
-    @current_player = @current_player.marker.downcase == 'x' ?  player_o : player_x
-  end
-
-  # check if game has ended
-  def game_ended?
-    ended = draw? || player_won?(@player_x) || player_won?(@player_o)
-    @over = true if ended
-    ended
-  end
-
+  # utility function to get list of available empty spaces
   def available_spaces
     @places.each_index.select { |place| place_available?(place) }
   end
 
-  def draw?
-    @draw = available_spaces.empty?
-    @draw
+  def placeholder_to_index(value)
+    @places.index(value)
   end
 
-  def player_won?(player)
-    result = WIN_COMBINATIONS.detect do |combo|
-      @places[combo[0]] == player.marker &&
-      @places[combo[0]] == @places[combo[1]] &&
-      @places[combo[1]] == @places[combo[2]] &&
-      !place_available?(combo[0])
+  def index_to_placeholder(index)
+    @places[index]
+  end
+  
+  private
+    def initialize_places(rows)
+      alphabets = ('A' .. ('A'.ord + rows - 1).chr).to_a
+      letters = (1 .. rows).to_a
+      @places = alphabets.product(letters).map { |x, y| "#{x}#{y}" }    
     end
 
-    @winner = player if result
-    result
-  end
+    # identify user with next turn
+    def next_turn
+      @current_player = @current_player.marker == 'X' ?  player_o : player_x
+    end
+
+    # check if game has ended
+    def game_ended?
+      ended = draw? || player_won?(@player_x) || player_won?(@player_o)
+      @over = true if ended
+      ended
+    end
+
+    # check if game has been drawn? i.e. no places left in the board
+    def draw?
+      @draw = available_spaces.empty?
+      @draw
+    end
+
+    # check if a player has won
+    def player_won?(player)
+      result = win_combinations.any? do |combination|
+        combination.all? { |place| place == player.marker }
+      end
+
+      @winner = player if result
+      result
+    end
+
+    # return all possible win combinations in the board
+    def win_combinations
+      split_into_rows
+        .concat(split_into_columns)
+        .concat(split_diagonals)
+    end
+
+    # split board row wise
+    def split_into_rows
+      @places.each_slice(@rows).to_a
+    end
+
+    # split board column wise
+    def split_into_columns
+      split_into_rows.transpose
+    end
+
+    # split board in diagonals (both left and right)
+    def split_diagonals
+      left = []
+      right = []
+    
+      (0..@rows - 1).each do |position| 
+        rows = split_into_rows
+        left << rows[position][position]
+        right << rows[position][@rows - position - 1]
+      end
+    
+      return [left, right]
+    end
+
 end
