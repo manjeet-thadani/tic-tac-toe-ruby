@@ -10,7 +10,6 @@ class ComputerPlayer
     @marker = marker
   end
   
-  # TODO: Add intelligent code
   def select_place(game)
     # NOTE: use this to obtain random from available spaces
     # game.available_spaces.sample
