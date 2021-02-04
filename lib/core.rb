@@ -38,18 +38,16 @@ class TTTCore
   end
 
   def placeholder_to_index(value)
-    @places.index(value)
+    value - 1
   end
 
   def index_to_placeholder(index)
-    @places[index]
+    index + 1
   end
   
   private
     def initialize_places(rows)
-      alphabets = ('A' .. ('A'.ord + rows - 1).chr).to_a
-      letters = (1 .. rows).to_a
-      @places = alphabets.product(letters).map { |x, y| "#{x}#{y}" }    
+      @places = (1 .. rows * rows).to_a
     end
 
     # identify user with next turn

@@ -15,7 +15,7 @@ class TTTCLI
     available_spaces = options.map { |space| @game.index_to_placeholder(space) }
     @output.puts "Available Options: #{available_spaces}"
 
-    @game.placeholder_to_index(get_valid_input(method(:get_input), available_spaces))
+    @game.placeholder_to_index(get_valid_input(available_spaces))
   end
 
   private
@@ -42,7 +42,7 @@ class TTTCLI
       @output.puts "Enter the number of rows on the board "
       @output.puts "Select 3 or 4"
 
-      get_valid_input(method(:get_input_integer), [3,4])
+      get_valid_input([3,4])
     end
 
     def select_player(marker)
@@ -50,27 +50,19 @@ class TTTCLI
       @output.puts "1) Human"
       @output.puts "2) Computer"
 
-      choice = get_valid_input(method(:get_input_integer),[1,2])
+      choice = get_valid_input([1,2])
       return HumanPlayer.new(marker, self) if choice == 1
       return ComputerPlayer.new(marker) if choice == 2
     end
 
-    def get_input
-      @input.gets.chomp
-    end
-
-    def get_input_integer
-      get_input.to_i
-    end
-
-    def get_valid_input(take_input, options)
-      choice = take_input.call
+    def get_valid_input(options)
+      choice = @input.gets.chomp.to_i
 
       if options.include? choice
         choice
       else
         @output.puts "Invalid Selection"
-        get_valid_input(take_input, options)
+        get_valid_input(options)
       end
     end
     
@@ -88,12 +80,11 @@ class TTTCLI
       @output.puts "\n#{@game.current_player.marker}, take your turn"
     end
 
-    # TODO: update based on the board size
     def display_board
       rows = @game.places.each_slice(@game.rows).to_a
       formatted_rows = rows.map { |row| " #{row.join(' | ')}  " }
 
-      line_seperator = "-" * (@game.rows * 4 + ( @game.rows - 1))
+      line_seperator = "-" * (@game.rows * 3 + ( @game.rows - 1))
 
       @output.puts "\n   Board:  \n\n"
       @output.puts formatted_rows.join("\n#{line_seperator}\n")
