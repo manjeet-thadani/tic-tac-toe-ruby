@@ -22,7 +22,7 @@ class TTTCLI
     # start the TTT game
     def start
       initialize_game
-      until @game.over
+      until @game.over?
         take_turn
       end
       print_outcome

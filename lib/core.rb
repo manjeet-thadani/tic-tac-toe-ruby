@@ -1,6 +1,6 @@
 class TTTCore
-  attr_reader :player_x, :player_o, :current_player
-  attr_reader :places, :rows, :winner, :draw, :over 
+  attr_reader :player_x, :player_o
+  attr_reader :places, :rows
 
   def initialize(rows, player_x, player_o)
     initialize_places(rows)
@@ -8,14 +8,11 @@ class TTTCore
     @rows = rows
     @player_x = player_x
     @player_o = player_o
-
-    # assuming player_x would take first turn
-    @current_player = player_x
   end
 
   # used by the player with current turn to insert marker at position
   def turn
-    place = @current_player.select_place(self)
+    place = current_player.select_place(self)
     move(place)
   end
 
@@ -26,10 +23,8 @@ class TTTCore
 
   # add marker to a specifc position in the board
   def move(place)
-    @places[place] = @current_player.marker if place_available?(place)
-
-    next_turn
-    game_ended?
+    @places[place] = current_player.marker if place_available?(place)
+    over?
   end
 
   # utility function to get list of available empty spaces
@@ -44,38 +39,43 @@ class TTTCore
   def index_to_placeholder(index)
     index + 1
   end
+
+  # check if game has been drawn? i.e. no places left in the board
+  def draw?
+    available_spaces.empty? && winner.nil?
+  end
+
+  def winner
+    return @player_x if player_won?(@player_x)
+    return @player_o if player_won?(@player_o)
+
+    return nil
+  end
   
+  # check if game has ended
+  def over?
+    draw? || player_won?(@player_x) || player_won?(@player_o)
+  end
+
+  # identify user with current turn
+  def current_player
+    available_spaces.size.even? ? @player_o : @player_x
+  end
+
+  def reset_place(place)
+    @places[place.to_i] = place + 1
+  end
+
   private
     def initialize_places(rows)
       @places = (1 .. rows * rows).to_a
     end
 
-    # identify user with next turn
-    def next_turn
-      @current_player = @current_player.marker == 'X' ?  player_o : player_x
-    end
-
-    # check if game has ended
-    def game_ended?
-      ended = draw? || player_won?(@player_x) || player_won?(@player_o)
-      @over = true if ended
-      ended
-    end
-
-    # check if game has been drawn? i.e. no places left in the board
-    def draw?
-      @draw = available_spaces.empty?
-      @draw
-    end
-
     # check if a player has won
     def player_won?(player)
-      result = win_combinations.any? do |combination|
+      win_combinations.any? do |combination|
         combination.all? { |place| place == player.marker }
       end
-
-      @winner = player if result
-      result
     end
 
     # return all possible win combinations in the board
