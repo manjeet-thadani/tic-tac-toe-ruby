@@ -13,13 +13,15 @@ class TTTWeb < Sinatra::Base
 
   # Pops the game mode selection menu
   get '/' do
-    erb :index
+    redirect to('/game')
+
+    # [TODO] fix initial form
+    # erb :index
   end
 
-  # Implements the game mode selection and redirects to the game screen
-  get '/mode/:mode' do
-    redirect to('/game')
-  end
+  # post '/mode' do
+  #   redirect to('/game')
+  # end
 
   # Intializes the game
   get '/game' do
