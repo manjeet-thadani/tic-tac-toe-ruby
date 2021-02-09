@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Tic Tac Toe</title>
+  <link rel="stylesheet" type="text/css" href="/css/style.css">
+</head>
+<body>
+  <main class="<%= session[:current_player].downcase %><%= (session[:game_over].nil?) ? '' : ' disable' %>">
+  <% (0...session[:rows]).each do |row| %>
+  	<nav>
+    <% (0...session[:rows]).each do |col| %>
+      <% index = (session[:rows] * row) + col %>
+      <a href="/move/<%= index + 1 %>" class="<%= (session[:places][index] != 'X' && session[:places][index] != 'O') ? '' : session[:places][index].downcase  %>"></a>
+    <% end %>
+    </nav>
+  <% end %>
+  </main>
+
+  <% if ! session[:game_over].nil? %>
+    <aside>
+      <span>
+        <% if session[:winner] != nil %>
+          <%= "Player #{session[:winner]} wins!" %>
+        <% else %>
+          Draw
+        <% end %>
+      </span>
+      <nav>
+        <a href="/game">New Game</a>
+        <a href="/">Main Menu</a>
+      </nav>
+    </aside>
+  <% end %>
+</body>
+</html>
